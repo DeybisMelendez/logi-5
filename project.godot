@@ -20,6 +20,10 @@ config/description="Godot Template 3.2.2
 https://github.com/DeybisMelendez/godot-template"
 config/icon="res://icon.png"
 
+[debug]
+
+settings/gdscript/max_call_stack=2048
+
 [display]
 
 window/size/width=720

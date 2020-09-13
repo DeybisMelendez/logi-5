@@ -1,6 +1,12 @@
 extends Control
 
-onready var cells = $GridContainer.get_children()
+onready var cells = $CenterContainer/GridContainer.get_children()
+var last = 0
+var better_board = {
+	errors_size = 10000,
+	errors = [],
+	board = []
+}
 var rows = [
 	[0,1,2,3,4],
 	[5,6,7,8,9],
@@ -15,11 +21,17 @@ var columns = [
 	[3,8,13,18,23],
 	[4,9,14,19,24]
 ]
+onready var regions = get_regions()
 func _ready():
+	randomize()
 	create_board()
+	yield(get_tree().create_timer(3),"timeout")
 	fix_errors()
 
 func create_board():
+#	for region in regions:
+#		for item in region.size():
+#			region[item].text = str(item+1)
 	var array = []
 	for i in 5:
 		for a in 5:
@@ -38,10 +50,8 @@ func fix_errors():
 			values.append(cells[i])
 		for a in values:
 			for b in values:
-				if  a != b:
-					if a.text == b.text:
-						if not errors.has(a):
-							errors.append(a)
+				if  a != b and a.text == b.text and not errors.has(a):
+					errors.append(a)
 	#Si las columnas tienen repetidos
 	for column in columns:
 		var values = []
@@ -49,30 +59,46 @@ func fix_errors():
 			values.append(cells[i])
 		for a in values:
 			for b in values:
-				if  a != b:
-					if a.text == b.text:
-						if not errors.has(a):
-							errors.append(a)
+				if  a != b and a.text == b.text and not errors.has(a):
+					errors.append(a)
 	#Si las regiones tienen repetidos
-	var regions = get_regions()
 	for region in regions:
 		for a in region:
 			for b in region:
-				if a != b:
-					if a.text == b.text:
-						if not errors.has(a):
-							errors.append(a)
+				if a != b and a.text == b.text and not errors.has(a):
+					errors.append(a)
 	if errors.size() == 0:
 		return
+	if better_board["errors_size"] > errors.size():
+		better_board["board"] = cells.duplicate()
+		better_board["errors_size"] = errors.size()
+		better_board["errors"] = errors.duplicate()
+		print(errors.size())
+	elif last > 100:
+		create_board()
+		errors = []
+		better_board["errors_size"] = 10000
+		last = 0
+	else:
+		cells = better_board["board"].duplicate()
+		errors = better_board["errors"].duplicate()
+		last += 1
+	shuffle_errors(errors)
+	#shuffle_errors(errors)
+	fix_errors()
+
+func shuffle_errors(errors):
+	#print(errors.size())
 	var temp_errors = errors.duplicate()
 	var shuffle = []
 	for i in temp_errors:
 		shuffle.append(i.text)
+	var first_item = shuffle.pop_front()
+	shuffle.append(first_item)
 	for i in errors.size():
 		var random = shuffle[randi()% shuffle.size()]
-		shuffle.erase(random)
 		errors[i].text = random
-	fix_errors()
+		shuffle.erase(random)
 
 func get_regions():
 	var regions = [[],[],[],[],[]]
