@@ -22,20 +22,18 @@ func _ready():
 	randomize()
 	randomize_board()
 	create_board()
-#	yield(get_tree().create_timer(3),"timeout")
-#	fix_errors()
 
 func create_board():
 	var errors = check_errors()
 	while errors.size() != 0:
-		print(errors.size())
+		print(errors.size(), stack.size())
 		var size = errors.size()
 		shuffle(errors)
 		var nerrors = check_errors()
-		while size < nerrors.size():
+		while nerrors.size() > size:
 			shuffle(errors)
 			nerrors = check_errors()
-		if check_errors().size() < size:
+		if nerrors.size() < size:
 			stack.append(get_configuration())
 		elif stack.size() > 0:
 			var conf = stack.pop_back()
@@ -43,7 +41,6 @@ func create_board():
 		else:
 			randomize_board()
 		errors = check_errors()
-		#yield(get_tree().create_timer(0.1),"timeout")
 
 func set_configuration(conf):
 	for i in conf.size():
@@ -54,7 +51,6 @@ func get_configuration():
 	for item in cells:
 		conf.append(item.text)
 	return conf
-
 
 func randomize_board():
 	for region in regions:
@@ -99,51 +95,11 @@ func check_errors():
 			for b in region:
 				if a != b and a.text == b.text and not errors.has(a):
 					errors.append(a)
-#					errors.append(b)
+					#errors.append(b)
 	return errors
-
-func shuffle_errors(errors):
-	#print(errors.size())
-	var temp_errors = errors.duplicate()
-	var shuffle = []
-	for i in temp_errors:
-		shuffle.append(i.text)
-	var first_item = shuffle.pop_front()
-	shuffle.append(first_item)
-	for i in errors.size():
-		var random = shuffle[randi()% shuffle.size()]
-		errors[i].text = random
-		shuffle.erase(random)
 
 func get_regions():
 	var regions = [[],[],[],[],[]]
 	for cell in cells:
 		regions[cell.color].append(cell)
 	return regions
-
-#CREAR CASILLAS():
-#	Asignar aleatoriamente 5 veces números del 1 al 5 en cada casilla.
-#
-#ARREGLAR ERRORES(Casillas):
-#	crear array Errores
-#	Por cada fila de las Casillas:
-#		si hay números repetidos en la fila:
-#			agregar casillas repetidas al Array Errores
-#	Por cada columna de las Casillas:
-#		si hay números repetidos en al columna:
-#			agregar casillas repetidas al Array Errores
-#	Por cada region de las Casillas:
-#		si hay números repetidos en la región:
-#			agregar casillas repetidas al Array Errores
-#	si el tamaño de Array Errores es cero:
-#		devolver Casillas
-#	Eliminar casillas repetidas de Array Errores
-#	Duplicar Array Errores a Array Casillas Mezclar
-#	Por cada item de Array Errores:
-#		Elegir aleatoriamente una casilla de Array Casillas Mezclar.
-#		Eliminar casilla obtenida de Array Casillas Mezclar.
-#		Asignar número de la casilla elegida a Casillas en la posición de item de Array Errores.
-#	devolver ARREGLAR ERRORES(Casillas)
-#
-#Casillas Random = CREAR CASILLAS()
-#Resultado = ARREGLAR ERRORES(Casillas Random)
