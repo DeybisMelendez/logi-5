@@ -3,10 +3,7 @@ extends Control
 onready var cells = $CenterContainer/GridContainer.get_children()
 onready var regions = get_regions()
 
-var better_board = {
-	errors = [],
-	board = []
-}
+var stack = []
 var rows = [
 	[0,1,2,3,4],
 	[5,6,7,8,9],
@@ -29,32 +26,50 @@ func _ready():
 #	fix_errors()
 
 func create_board():
-	var last_errs = check_errors()
-	var errs = check_errors()
-	while errs.size() != 0:
-		#print(errs.size())
-		shuffle_errors(errs)
-		errs = check_errors()
-#		if last_errs.size() < errs.size():
-#			randomize_board()
-#	var array = []
-#	for i in 5:
-#		for a in 5:
-#			array.append(a+1)
-#	for item in cells:
-#		var random = array[randi()% array.size()-1]
-#		item.text = str(random)
-#		array.erase(random)
+	var errors = check_errors()
+	while errors.size() != 0:
+		print(errors.size())
+		var size = errors.size()
+		shuffle(errors)
+		var nerrors = check_errors()
+		while size < nerrors.size():
+			shuffle(errors)
+			nerrors = check_errors()
+		if check_errors().size() < size:
+			stack.append(get_configuration())
+		elif stack.size() > 0:
+			var conf = stack.pop_back()
+			set_configuration(conf)
+		else:
+			randomize_board()
+		errors = check_errors()
+		#yield(get_tree().create_timer(0.1),"timeout")
+
+func set_configuration(conf):
+	for i in conf.size():
+		cells[i].text = conf[i]
+
+func get_configuration():
+	var conf = []
+	for item in cells:
+		conf.append(item.text)
+	return conf
+
 
 func randomize_board():
 	for region in regions:
 		var nums = [1,2,3,4,5]
 		nums.shuffle()
-		for item in region.size():
-			if not better_board["errors"].has(region[item]):
-				region[item].text = str(nums.pop_front())
-			else:
-				nums.erase(int(region[item].text))
+		for item in region:
+			item.text = str(nums.pop_back())
+
+func shuffle(errors):
+	var r = []
+	for i in errors:
+		r.append(i.text)
+	errors.shuffle()
+	for i in errors:
+		i.text = r.pop_back()
 
 func check_errors():
 	var errors = []
