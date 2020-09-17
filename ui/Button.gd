@@ -1,7 +1,11 @@
 tool
 extends Button
+var locked = false
 enum Colors{red, blue, yellow, fucsia, green}
 export (Colors) var color setget _set_color
+
+func _ready():
+	connect("button_up", self, "click")
 
 func _set_color(col):
 	var style = get("custom_styles/normal").duplicate()
@@ -20,3 +24,15 @@ func _set_color(col):
 	set("custom_styles/normal", style)
 	set("custom_styles/hover", style)
 	set("custom_styles/pressed", style)
+
+func click():
+	if not locked:
+		if text != "":
+			var num = int(text)
+			num += 1
+			if num <=5:
+				text = str(num)
+			else:
+				text = ""
+		else:
+			text = "1"

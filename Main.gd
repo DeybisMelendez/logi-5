@@ -1,9 +1,11 @@
 extends Control
 
-onready var cells = $CenterContainer/GridContainer.get_children()
+onready var cells = $VBoxContainer/CenterContainer/GridContainer.get_children()
 onready var regions = get_regions()
 
 var stack = []
+var solution = []
+var game = []
 var rows = [
 	[0,1,2,3,4],
 	[5,6,7,8,9],
@@ -19,14 +21,49 @@ var columns = [
 	[4,9,14,19,24]
 ]
 func _ready():
+	$VBoxContainer/New.connect("button_up", self, "new_game")
+	$VBoxContainer/Solution.connect("button_up",self, "solution")
+	$VBoxContainer/Validate.connect("button_up", self, "validate")
 	randomize()
+	new_game()
+
+func new_game():
 	randomize_board()
 	create_board()
+	conf_board()
+
+func validate():
+	var errors = check_errors()
+	if errors.size() > 0:
+		OS.alert("Cantidad de errores: "+ str(errors.size()), "Su solución tiene errores")
+	else:
+		OS.alert("Resolviste el puzzle!", "Felicidades!")
+
+func solution():
+	set_configuration(solution)
+
+func conf_board():
+	solution = get_configuration()
+	for cell in cells:
+		cell.text = ""
+	var regs = regions.duplicate()
+	regs.shuffle()
+	var random = regs[0][randi()% regs.size()]
+	var id = int(random.name)
+	random.text = solution[id]
+	random.locked = true
+	regs.pop_back()
+	for region in regs:
+		random = region[randi()% region.size()]
+		id = int(random.name)
+		random.text = solution[id]
+		random.locked = true
+	game = get_configuration()
 
 func create_board():
 	var errors = check_errors()
 	while errors.size() != 0:
-		print(errors.size(), stack.size())
+		print("errors: ",errors.size(),"	stack: ", stack.size())
 		var size = errors.size()
 		shuffle(errors)
 		var nerrors = check_errors()
